@@ -1,0 +1,1147 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALIUSIN | Video Editing Portfolio</title>
+<!-- Importing Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- Three.js from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style>
+:root {
+--bg-color: #050505;
+--text-color: #ffffff;
+--accent-green: #39ff14; /* Neon Green */
+--accent-green-dim: rgba(57, 255, 20, 0.1);
+--card-bg: rgba(255, 255, 255, 0.03);
+--font-main: 'Space Grotesk', sans-serif;
+--font-display: 'Syncopate', sans-serif;
+}
+
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+
+body {
+background-color: var(--bg-color);
+color: var(--text-color);
+font-family: var(--font-main);
+overflow-x: hidden;
+width: 100vw;
+cursor: default; /* System cursor */
+}
+
+/* --- 1. Fluid Shader Background (Back Layer) --- */
+#canvas-container {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+z-index: -3;
+opacity: 0.8;
+pointer-events: none;
+}
+
+/* --- 2. Grid Dot Background (Middle Layer) --- */
+.dot-grid {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+z-index: -2;
+background-image: radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+background-size: 20px 20px;
+pointer-events: none;
+}
+
+/* --- 3. Background Grid Glow (Lights up the points) --- */
+.grid-glow {
+position: fixed;
+width: 60px;
+height: 60px;
+border-radius: 50%;
+/* Sharp, intense gradient to light up points */
+background: radial-gradient(circle, rgba(57, 255, 20, 1) 0%, rgba(57, 255, 20, 0) 50%);
+mix-blend-mode: screen;
+pointer-events: none;
+z-index: -1;
+transform: translate(-50%, -50%);
+will-change: transform, left, top;
+}
+
+/* --- Navigation --- */
+nav {
+position: fixed;
+top: 0;
+width: 100%;
+padding: 2rem 4rem;
+display: flex;
+justify-content: space-between;
+align-items: center;
+z-index: 100;
+mix-blend-mode: exclusion;
+}
+
+.logo {
+font-family: var(--font-display);
+font-weight: 700;
+font-size: 1.5rem;
+letter-spacing: 2px;
+text-transform: uppercase;
+color: #fff;
+text-decoration: none;
+cursor: pointer;
+}
+/* Logo hover color */
+.logo:hover,
+.logo:focus {
+	color: var(--accent-green);
+	transition: color 0.18s ease;
+}
+
+.nav-links {
+display: flex;
+gap: 3rem;
+list-style: none;
+}
+
+.nav-item {
+position: relative;
+overflow: hidden;
+}
+
+.magnetic-wrap {
+display: inline-block;
+transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+cursor: pointer;
+}
+
+.nav-link {
+text-decoration: none;
+color: #fff;
+font-weight: 700;
+text-transform: uppercase;
+font-size: 0.9rem;
+letter-spacing: 1px;
+}
+
+/* --- Layout --- */
+main {
+position: relative;
+z-index: 10;
+}
+
+section {
+min-height: 100vh;
+padding: 4rem 10%;
+display: flex;
+flex-direction: column;
+justify-content: center;
+}
+
+/* --- Hero Section --- */
+#hero {
+align-items: flex-start;
+}
+
+h1 {
+font-family: var(--font-display);
+/* Reduced for a smaller heading size */
+font-size: clamp(2rem, 6vw, 5rem);
+line-height: 0.9;
+text-transform: uppercase;
+margin-bottom: 2rem;
+mix-blend-mode: overlay;
+}
+
+.hero-sub {
+font-size: 1.2rem;
+max-width: 600px;
+margin-bottom: 3rem;
+color: #ccc;
+line-height: 1.6;
+}
+
+.btn {
+display: inline-block;
+padding: 1rem 2.5rem;
+border: 1px solid var(--accent-green);
+color: var(--accent-green);
+text-decoration: none;
+text-transform: uppercase;
+font-weight: bold;
+letter-spacing: 2px;
+transition: all 0.3s ease;
+position: relative;
+overflow: hidden;
+cursor: pointer;
+}
+
+.btn:hover {
+background-color: var(--accent-green);
+color: #000;
+box-shadow: 0 0 20px var(--accent-green);
+}
+
+/* Hero action buttons: keep buttons inline and spaced */
+.hero-actions { display:flex; gap:1rem; align-items:center; margin-top:1.2rem; }
+
+/* Hero layout: place content left and looping clip (like a GIF) on the right */
+.hero-inner { display: flex; gap: 2rem; align-items: flex-start; width: 100%; }
+.hero-text { flex: 1 1 60%; min-width: 260px; }
+.hero-video { flex: 0 0 420px; display: flex; align-items: flex-start; }
+.hero-video video { width: 420px; max-width: 42vw; height: auto; border-radius: 12px; object-fit: cover; display: block; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+
+@media (max-width: 900px) {
+	.hero-inner { flex-direction: column-reverse; gap: 1.2rem; }
+	.hero-video { flex: none; width: 100%; }
+	.hero-video video { width: 100%; max-width: 100%; }
+}
+
+/* --- Portfolio Section (3D Tilt Cards) --- */
+#portfolio {
+perspective: 1000px;
+}
+
+.section-title {
+font-family: var(--font-display);
+font-size: 2rem;
+margin-bottom: 3rem;
+border-left: 4px solid var(--accent-green);
+padding-left: 1rem;
+}
+
+.grid {
+	display: grid;
+	/* Force three columns on desktop so cards are 3 on top and 3 below */
+	grid-template-columns: repeat(3, 1fr);
+	gap: 2.5rem;
+	width: 100%;
+}
+
+.card-wrap {
+height: 450px;
+perspective: 1000px;
+position: relative;
+z-index: 1;
+}
+
+.card {
+width: 100%;
+height: 100%;
+background: var(--card-bg);
+border: 1px solid rgba(255, 255, 255, 0.1);
+border-radius: 12px;
+position: relative;
+transform-style: preserve-3d;
+transition: transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 220ms ease;
+display: flex;
+flex-direction: column;
+overflow: hidden;
+box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+backdrop-filter: blur(5px);
+cursor: pointer;
+}
+
+/* Remove default anchor underline/color when using <a class="card"> */
+.card {
+	text-decoration: none;
+	color: inherit;
+}
+.card:focus { outline: none; }
+
+.card-image {
+width: 100%;
+height: 70%;
+object-fit: cover;
+display: block;
+aspect-ratio: 16 / 9;
+border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+transform: translateZ(20px);
+}
+
+.card-content {
+padding: 1.5rem;
+transform: translateZ(30px);
+background: linear-gradient(to top, #000 0%, transparent 100%);
+height: 30%;
+display: flex;
+flex-direction: column;
+justify-content: flex-end;
+}
+
+.card-title {
+font-family: var(--font-display);
+font-size: 1.2rem;
+margin-bottom: 0.5rem;
+color: var(--accent-green);
+}
+
+.card-tags {
+font-size: 0.8rem;
+color: #888;
+text-transform: uppercase;
+letter-spacing: 1px;
+}
+
+.card::after {
+content: "";
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+pointer-events: none;
+z-index: 2;
+}
+
+/* Hover shadow for better touch feedback */
+.card:hover {
+	box-shadow: 0 18px 50px rgba(0,0,0,0.65);
+}
+
+/* Benefits section: centered green bar above the title */
+#beneficii .section-title {
+	display: inline-block;
+	text-align: left;
+	margin: 0 auto 1.25rem;
+	padding-left: 1rem;
+	position: relative;
+}
+
+/* Vertical green bar positioned to the left of the heading text (next to the "B") */
+#beneficii .section-title::before {
+	content: "";
+	position: absolute;
+	left: -20px;
+	top: 4px;
+	width: 4px;
+	height: calc(100% - 8px);
+	background: var(--accent-green);
+	border-radius: 2px;
+	box-shadow: 0 0 18px rgba(57,255,20,0.22);
+}
+
+/* Remove the default left border for contact title (no extra line) */
+#contact .section-title {
+	border-left: none;
+	padding-left: 0;
+}
+
+/* Touch/class-based active state for cards (used on tap) */
+.card.touch-active {
+	transform: perspective(1000px) scale(1.06) !important;
+	box-shadow: 0 22px 60px rgba(0,0,0,0.7);
+}
+
+/* --- Contact / Footer --- */
+footer {
+padding: 4rem 10%;
+border-top: 1px solid rgba(255,255,255,0.1);
+display: flex;
+justify-content: space-between;
+align-items: center;
+flex-wrap: wrap;
+gap: 2rem;
+}
+
+.socials a {
+color: #fff;
+margin-left: 2rem;
+text-decoration: none;
+font-weight: bold;
+transition: color 0.3s;
+cursor: pointer;
+}
+
+.socials a:hover {
+color: var(--accent-green);
+}
+
+/* Footer terms styling */
+.footer-terms {
+	color: #ccc;
+	font-size: 0.95rem;
+	max-width: 480px;
+}
+.footer-terms details {
+	background: transparent;
+	border: 1px solid rgba(255,255,255,0.04);
+	padding: 0.6rem 0.9rem;
+	border-radius: 8px;
+}
+.footer-terms summary {
+	cursor: pointer;
+	font-weight: 700;
+	color: var(--accent-green);
+	list-style: none;
+	outline: none;
+}
+.footer-terms a { color: var(--accent-green); text-decoration: underline; }
+
+/* --- Bottom Scrolling Light Effect --- */
+.scroll-progress-container {
+position: fixed;
+bottom: 0;
+left: 0;
+width: 100%;
+height: 4px;
+background: rgba(255, 255, 255, 0.1);
+z-index: 200;
+}
+
+.scroll-progress-bar {
+height: 100%;
+width: 0%;
+background-color: var(--accent-green);
+box-shadow: 0 0 15px var(--accent-green), 0 0 30px var(--accent-green);
+transition: width 0.1s linear;
+}
+
+/* Video modal styles */
+.video-modal {
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,0.85);
+	display: none;
+	align-items: center;
+	justify-content: center;
+	z-index: 1200;
+}
+.video-modal.show { display: flex; }
+.video-modal-content { width: 92%; max-width: 960px; position: relative; }
+.video-close { position: absolute; top: -18px; right: -12px; font-size: 2rem; color: #fff; background: transparent; border: none; cursor: pointer; }
+/* Position tools to the right of the about section */
+#despre-mine { position: relative; }
+.tools-position {
+	position: absolute;
+	right: calc(6% + 3rem);
+	top: 50%;
+	transform: translateY(-50%);
+	width: 260px;
+}
+@media (max-width: 1000px) {
+	.tools-position { position: static; transform: none; margin-left: auto; }
+}
+
+/* Tool SVGs use their original colors */
+.tools-grid img {
+	filter: none;
+}
+/* Tools icons grid (2x2) for About section */
+.tools-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 1.2rem;
+	width: 340px; /* wider container so icons are further right and larger */
+}
+.tool-card {
+	background: var(--card-bg);
+	border: 1px solid rgba(255,255,255,0.06);
+	border-radius: 14px;
+	height: 220px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-decoration: none;
+	color: #fff;
+	transition: transform 0.12s ease, box-shadow 0.12s ease;
+	cursor: pointer;
+	padding: 0.6rem;
+}
+.tool-card:hover { transform: translateY(-8px); box-shadow: 0 16px 40px rgba(0,0,0,0.65); }
+.tool-icon {
+	font-family: var(--font-display);
+	font-size: 2.6rem;
+	font-weight: 900;
+	background: linear-gradient(135deg, rgba(57,255,20,0.06), rgba(57,255,20,0.01));
+	padding: 1.25rem 1.5rem;
+	border-radius: 14px;
+	color: var(--accent-green);
+}
+.tool-label { font-size: 0.9rem; color: #ccc; margin-top: 0.35rem; text-align:center; }
+.tool-card img { width: 110px; height: 110px; }
+
+
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+/* Mobile: keep heading smaller */
+h1 { font-size: 2.2rem; }
+nav { padding: 1.5rem 2rem; }
+.nav-links { display: none; }
+.grid { grid-template-columns: 1fr; }
+section { padding: 4rem 5%; }
+.grid-glow { display: none; /* Disable glow on mobile */ }
+}
+/* --- BENEFICII positioned arrow/video --- */
+.beneficii-arrow-video {
+	position: absolute;
+	right: 22.5%;
+	top: 34%;
+	transform: translateY(-50%);
+	width: 180px;
+	max-width: 14vw;
+	height: auto;
+	border-radius: 8px;
+	object-fit: contain;
+	object-position: center;
+	box-shadow: none;
+	border: 0;
+	z-index: 60;
+	background: transparent;
+	mix-blend-mode: screen; /* makes black background visually transparent */
+	pointer-events: none;
+	will-change: transform, opacity;
+}
+@media (max-width: 1000px) {
+	.beneficii-arrow-video { display: none; }
+}
+/* CTA text positioned where the arrow animation starts (bottom margin) */
+.arrow-cta-text {
+	position: absolute;
+	/* anchor to the video wrapper: directly below the video */
+	right: 30%;
+	top: calc(100%);
+	color: #fff;
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(12px, 1.8vw, 20px);
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	z-index: 70;
+	pointer-events: none;
+	mix-blend-mode: normal;
+	transform: none;
+	text-align: center;
+	display: inline-block;
+	white-space: nowrap;
+}
+/* BENEFICII CTA wrapper with left-side video */
+.beneficii-cta-wrap{
+	width:100%;
+	margin-top:2.25rem;
+	display:flex;
+	justify-content:center;
+	align-items:center;
+	gap:1rem;
+}
+.beneficii-cta-video{
+	width:120px;
+	max-width:12vw;
+	height:auto;
+	object-fit:contain;
+	display:block;
+	pointer-events:none;
+}
+@media (max-width:900px){
+	.beneficii-cta-wrap{flex-direction:column; gap:0.5rem;}
+	.beneficii-cta-video{width:80px; max-width:20vw;}
+}
+/* CTA lines styling */
+.arrow-cta-text .cta-line1{ font-weight:900; font-size: clamp(14px, 2.4vw, 24px); color:#4bdd5f; }
+.arrow-cta-text .cta-line2{
+	font-weight:800;
+	font-size: clamp(12px, 2.4vw, 24px);
+	color: var(--accent-green);
+	margin-top: 4px;
+	display: inline-block;
+	transform: translateX(var(--asta-offset, 25px));
+}
+@media (max-width: 1000px) {
+	.arrow-cta-text { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- 1. Shader Background (Layer -3) -->
+<div id="canvas-container"></div>
+
+<!-- 2. Grid Dot Background (Layer -2) -->
+<div class="dot-grid"></div>
+
+<!-- 3. Background Grid Glow (Layer -1) -->
+<div class="grid-glow" id="gridGlow"></div>
+
+
+<!-- Magnetic Navigation -->
+<nav>
+<a href="#" class="logo">ALIUSIN</a>
+<ul class="nav-links">
+<li class="nav-item magnetic-area">
+<div class="magnetic-wrap">
+<a href="#portfolio" class="nav-link">CONTENT</a>
+</div>
+</li>
+<li class="nav-item magnetic-area">
+<div class="magnetic-wrap">
+<a href="#despre-mine" class="nav-link">DESPRE MINE</a>
+</div>
+</li>
+<li class="nav-item magnetic-area">
+<div class="magnetic-wrap">
+<a href="#contact" class="nav-link">Contact</a>
+</div>
+</li>
+</ul>
+</nav>
+
+<main>
+<!-- Hero Section -->
+<section id="hero">
+	<div class="hero-inner">
+		<div class="hero-text">
+			<h1>CREEAZĂ <br>VIDEOURI<br>CAPTIVANTE</h1>
+			<p class="hero-sub">
+			Video Editor Profesionist.
+			Transformați ideile în clipuri memorabile care aduc rezultate.
+			</p>
+			<div class="hero-actions">
+				<a href="#contact" class="btn interactive">CONTACTEAZĂ-MĂ</a>
+				<a href="#portfolio" class="btn interactive">CLIPURILE MELE</a>
+			</div>
+		</div>
+		<div class="hero-video" aria-hidden="true">
+			<video autoplay muted loop playsinline preload="auto" src="portofoliu%20site%20cod/clip%20de%20fundalm.mp4"></video>
+		</div>
+	</div>
+</section>
+
+<!-- Portfolio Section -->
+<section id="portfolio">
+<h2 class="section-title">CONTENT</h2>
+<div class="grid">
+	<!-- Six video cards - replace data-video with your actual video URLs -->
+	<div class="card-wrap">
+			<a class="card" href="https://www.youtube.com/watch?v=uyMyIIQNslQ" target="_blank" rel="noopener noreferrer">
+				<img src="portofoliu site cod/Attack the d point.jpg" alt="Attack the d point" class="card-image" loading="lazy" width="1400" height="788" sizes="(max-width:900px) 100vw, 33vw" srcset="portofoliu site cod/Attack the d point.jpg 1x, portofoliu site cod/Attack the d point.jpg 2x">
+				<div class="card-content"><h3 class="card-title">Attack the d point</h3><p class="card-tags">Gameplay</p></div>
+			</a>
+	</div>
+	<div class="card-wrap">
+			<a class="card" href="https://www.youtube.com/watch?v=ZVLFD4VVL1U&t" target="_blank" rel="noopener noreferrer">
+				<img src="portofoliu site cod/TIER LIST TIPURI DE CONTINUT.jpg" alt="TIER LIST TIPURI DE CONTINUT" class="card-image" loading="lazy" width="1400" height="788" sizes="(max-width:900px) 100vw, 33vw" srcset="portofoliu site cod/TIER LIST TIPURI DE CONTINUT.jpg 1x, portofoliu site cod/TIER LIST TIPURI DE CONTINUT.jpg 2x">
+				<div class="card-content"><h3 class="card-title">TIER LIST TIPURI DE CONTINUT</h3><p class="card-tags">Top</p></div>
+			</a>
+	</div>
+	<div class="card-wrap">
+			<a class="card" href="https://www.youtube.com/watch?v=n20cBRX2Jb4&t" target="_blank" rel="noopener noreferrer">
+				<img src="portofoliu site cod/MEET ME 262 A-1aU1 (KILLS COMPILATION).jpg" alt="MEET ME 262 KILLS COMPILATION" class="card-image" loading="lazy" width="1400" height="788" sizes="(max-width:900px) 100vw, 33vw" srcset="portofoliu site cod/MEET ME 262 A-1aU1 (KILLS COMPILATION).jpg 1x, portofoliu site cod/MEET ME 262 A-1aU1 (KILLS COMPILATION).jpg 2x">
+				<div class="card-content"><h3 class="card-title">MEET ME 262 (Kills Compilation)</h3><p class="card-tags">Compilation</p></div>
+			</a>
+	</div>
+	<div class="card-wrap">
+			<a class="card" href="https://www.youtube.com/watch?v=D7zuKR9g9Wc" target="_blank" rel="noopener noreferrer">
+				<img src="portofoliu site cod/War Thunder April Fools gameplay compilation.jpg" alt="War Thunder April Fools" class="card-image" loading="lazy" width="1400" height="788" sizes="(max-width:900px) 100vw, 33vw" srcset="portofoliu site cod/War Thunder April Fools gameplay compilation.jpg 1x, portofoliu site cod/War Thunder April Fools gameplay compilation.jpg 2x">
+				<div class="card-content"><h3 class="card-title">War Thunder April Fools</h3><p class="card-tags">Gameplay</p></div>
+			</a>
+	</div>
+	<div class="card-wrap">
+			<a class="card" href="https://www.youtube.com/watch?v=CL0pUVItrx8" target="_blank" rel="noopener noreferrer">
+				<img src="portofoliu site cod/Crashing planes on Don't Stop Me Now-War Thunder.jpg" alt="Crashing planes" class="card-image" loading="lazy" width="1400" height="788" sizes="(max-width:900px) 100vw, 33vw" srcset="portofoliu site cod/Crashing planes on Don't Stop Me Now-War Thunder.jpg 1x, portofoliu site cod/Crashing planes on Don't Stop Me Now-War Thunder.jpg 2x">
+				<div class="card-content"><h3 class="card-title">Crashing planes on Don't Stop Me Now</h3><p class="card-tags">Crash Comp</p></div>
+			</a>
+	</div>
+	<div class="card-wrap">
+			<a class="card" href="https://www.youtube.com/watch?v=ZnJLEGbPFvE" target="_blank" rel="noopener noreferrer">
+				<img src="portofoliu site cod/Crazy War Thunder Pilot.jpg" alt="Crazy War Thunder Pilot" class="card-image" loading="lazy" width="1400" height="788" sizes="(max-width:900px) 100vw, 33vw" srcset="portofoliu site cod/Crazy War Thunder Pilot.jpg 1x, portofoliu site cod/Crazy War Thunder Pilot.jpg 2x">
+				<div class="card-content"><h3 class="card-title">Crazy War Thunder Pilot</h3><p class="card-tags">Highlights</p></div>
+			</a>
+	</div>
+</div>
+</section>
+
+<!-- Video modal (opens when clicking a card) -->
+<div id="video-modal" class="video-modal" aria-hidden="true">
+	<div class="video-modal-content">
+		<button id="videoClose" class="video-close" aria-label="Close video">×</button>
+		<video id="videoPlayer" controls playsinline style="width:100%; height:auto; display:block; background:#000"></video>
+	</div>
+</div>
+
+<!-- About Section -->
+<section id="despre-mine">
+<h2 class="section-title">DESPRE MINE</h2>
+<div style="display:flex; align-items:center; gap:2rem; flex-wrap:wrap; max-width:1100px;">
+	<div style="flex:0 0 320px; text-align:center; min-width:200px; order:0;">
+		<img src="portofoliu%20site%20cod/alsgisfa.gif" alt="alsgisfa" style="width:100%; height:auto; display:block; border-radius:12px;">
+	</div>
+	<div style="flex:1; min-width:280px; text-align:center; order:1; padding-left:3rem;">
+		<style>
+    .container-continut {
+        position: relative;  /* containerul care conține atât videoclipul cât și textul */
+    }
+    
+    /* Textul nou poziționat */
+    #heroSubNou {
+        position: absolute;
+        left: 60px;        /* mută la stânga cu 60px */
+        top: -170px;         /* mută sus cu 40px */
+        font-size: 1.5rem !important;  /* text mai mic */
+        width: 90%;         /* opțional: mai îngust */
+        z-index: 10;
+        color: #ffffff;     /* păstrează culoarea albă */
+    }
+    
+    /* Sau folosește transform pentru mișcare + scalare */
+    /*
+    #heroSubNou {
+        position: absolute;
+        transform: translate(-60px, -40px) scale(0.8);
+        transform-origin: top left;
+        z-index: 10;
+    }
+    */
+</style>
+
+<div class="container-continut">
+    <p id="heroSubNou" class="hero-sub" style="color: #ffffff; margin-bottom:3rem;">
+        Să creezi clipuri care atrag atenția nu a fost niciodată ușor dar pentru asta sunt eu aici 😎
+        Creați un videoclip atrăgător în economia atenției și adaptativ la viitorul creării de conținut!
+    </p>
+</div>
+		<p id="cePotFaceNou" style="position: absolute; left: 600px; top: 500px; transform: scale(1.1); transform-origin: top left; color: #69d34e; line-height: 1.9; margin-bottom: 0.5rem; width: 35%;">
+    <span style="font-size: 26px; color: #69d34e; display:block; margin-bottom: 1rem;">Ce pot face?</span>
+    Cu peste 5 ani de experiență în editarea de content sunt specializat pe content de orice tip, care este țintit spre o audiență largă. Softwar-urile pe care le stăpânesc includ Premiere Pro, After Effects, DaVinci Resolve, Cap Cut Pro și Photoshop.
+</p>
+	</div>
+	<div class="tools-position">
+		<div class="tools-grid">
+			<a class="tool-card" href="https://www.adobe.com/products/premiere.html" target="_blank" rel="noopener noreferrer">
+				<div>
+					<img src="portofoliu%20site%20cod/Adobe_Premiere_Pro_CC_icon.svg" alt="Premiere Pro" style="object-fit:contain;">
+					<div class="tool-label">Premiere Pro</div>
+				</div>
+			</a>
+			<a class="tool-card" href="https://www.adobe.com/products/photoshop.html" target="_blank" rel="noopener noreferrer">
+				<div>
+					<img src="portofoliu%20site%20cod/Adobe_Photoshop_CC_icon.svg" alt="Photoshop" style="object-fit:contain;">
+					<div class="tool-label">Photoshop</div>
+				</div>
+			</a>
+			<a class="tool-card" href="https://www.blackmagicdesign.com/products/davinciresolve/" target="_blank" rel="noopener noreferrer">
+				<div>
+					<img src="portofoliu%20site%20cod/davinci-resolve-seeklogo.svg" alt="DaVinci Resolve" style="object-fit:contain;">
+					<div class="tool-label">DaVinci</div>
+				</div>
+			</a>
+			<a class="tool-card" href="https://www.adobe.com/products/aftereffects.html" target="_blank" rel="noopener noreferrer">
+				<div>
+					<img src="portofoliu%20site%20cod/Adobe_After_Effects_CC_icon.svg" alt="After Effects" style="object-fit:contain;">
+					<div class="tool-label">After Effects</div>
+				</div>
+			</a>
+		</div>
+	</div>
+</div>
+</section>
+<section id="beneficii" style="position:relative;">
+<h2 class="section-title" style="text-align:center; margin:0 auto 1.5rem; border-left: none; padding-left:0;">BENEFICII</h2>
+<div style="display:flex; flex-wrap:wrap; gap:2rem; max-width:1100px; margin:0 auto; justify-content:center;">
+	<div style="flex:0 1 320px; min-width:280px; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 2rem;">
+		<h3 style="font-family: var(--font-display); font-size: 1.5rem; color: var(--accent-green); margin-bottom: 1rem;">Calitate Premium</h3>
+		<p style="color:#ccc; line-height:1.6;">Fiecare clip este editat cu atenție la detaliu pentru a asigura un impact vizual puternic și o poveste captivantă.</p>
+	</div>
+	<div style="flex:0 1 320px; min-width:280px; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 2rem;">
+		<h3 style="font-family: var(--font-display); font-size: 1.5rem; color: var(--accent-green); margin-bottom: 1rem;">Adaptabilitate</h3>
+		<p style="color:#ccc; line-height:1.6;">Indiferent de platformă sau tipul de conținut, mă adaptez pentru a crea clipuri care se potrivesc perfect nevoilor tale.</p>
+	</div>
+	<div style="flex:0 1 320px; min-width:280px; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 2rem;">
+		<h3 style="font-family: var(--font-display); font-size: 1.5rem; color: var(--accent-green); margin-bottom: 1rem;">Colaborare Eficientă</h3>
+		<p style="color:#ccc; line-height:1.6;">Comunicare deschisă și feedback continuu pentru a asigura că rezultatul final depășește așteptările tale.</p>
+	</div>
+	</div>
+
+	<!-- CTA under BENEFICII -->
+	<div style="width:100%; margin-top:2.25rem; text-align:center;">
+		<p style="font-family: var(--font-display); font-weight:700; font-size:1.25rem; color: #fff; text-transform:uppercase; letter-spacing:0.6px;">
+			CONTACTEAZĂ-MĂ ACUMA ȘI PRIMEȘTI UN EDIT GRATIS!
+		
+
+			<span class="info-wrap" style="display:inline-block; margin-left:0.6rem; position:relative;">
+				<span class="info-icon" aria-hidden="true" tabindex="0" style="display:inline-block; width:18px; height:18px; border-radius:50%; background:rgba(255,255,255,0.06); color:#fff; font-size:12px; line-height:18px; text-align:center;">i</span>
+				<span class="info-tooltip" role="tooltip" style="position:absolute; left:50%; transform:translateX(-50%); bottom:calc(100% + 8px); background:rgba(0,0,0,0.9); color:#fff; padding:0.55rem 0.75rem; border-radius:6px; font-size:0.85rem; white-space:nowrap; display:none; box-shadow:0 6px 18px rgba(0,0,0,0.45);">
+					Primești editarea gratuită doar dacă proiectul nu este mai mare de 5 minute.
+				</span>
+			</span>
+		</p>
+	</div>
+
+	<!-- Positioned Arrow Animation video placed in the BENEFICII area (matches red-box) -->
+	<video id="arrowAnim" class="beneficii-arrow-video" style="--arrow-rotate:-47deg;" autoplay muted loop playsinline preload="auto">
+		<source src="portofoliu site cod/Arrow ng_alpha.webm" type="video/webm">
+		<source src="portofoliu site cod/Arrow ng.mp4" type="video/mp4">
+	</video>
+
+	<!-- CTA text placed centered under the arrow video (two lines) -->
+	<div class="arrow-cta-text" id="arrowCta">
+		<div class="cta-line1">CITEȘTE</div>
+		<div class="cta-line2">ASTA</div>
+	</div>
+	<style>
+    /* Asigură-te că părintele are position relative */
+    .sectiune-beneficii {
+        position: relative;
+    }
+    
+    /* Videoclipul nou poziționat absolut față de părinte */
+    #arrowAnimNou {
+        position: absolute;
+        left: 270px;    /* mută la stânga cu 40px */
+        top: -15px;     /* mută sus cu 30px (negativ = sus, pozitiv = jos) */
+        z-index: 10;
+        width: 100px;   /* ajustează dimensiunea dacă e nevoie */
+        /* --arrow-rotate: -47deg;  păstrează rotația din style inline */
+    }
+</style>
+
+<div class="sectiune-beneficii">
+    <!-- Săgeata existentă -->
+    <video id="arrowAnim" class="..." autoplay muted loop>
+        <!-- surse existente -->
+    </video>
+    
+    <!-- Săgeata nouă care se suprapune -->
+    <video id="arrowAnimNou" class="beneficii-arrow-video" style="--arrow-rotate:-47deg;" autoplay muted loop playsinline preload="auto">
+        <source src="portofoliu site cod/Animation of arrows 23_transparent.webm" type="video/webm">
+        <source src="portofoliu site cod/Animation of arrows 23_transparent.mov" type="video/quicktime">
+    </video>
+</div>
+	<!-- Contact Section -->
+	<section id="contact">
+<h2 class="section-title">HAIDE SĂ LUCRĂM ÎMPREUNĂ!</h2>
+<p style="margin-bottom: 0.6rem; color: #69d34e;">Disponibil pentru proiecte independente și oportunități full-time</p>
+<p style="margin-bottom: 1.4rem; color: #69d34e;">Dacă ești interesat să colaborezi sau ai întrebări, nu ezita să mă contactezi prin email sau pe Discord!</p>
+<a href="mailto:aliusind55@gmail.com" class="btn interactive">aliusind55@gmail.com</a>
+<a href="https://discord.com/channels/@me/839839993202606111" class="btn interactive" target="_blank" rel="noopener noreferrer">Discord</a>
+</section>
+</main>
+
+<footer>
+<div class="copyright">© 2026 Aliusin Edits. All rights reserved.</div>
+<div class="socials">
+<a href="https://www.instagram.com/alex_dv55/" class="interactive" target="_blank" rel="noopener noreferrer">Instagram</a>
+<a href="https://www.youtube.com/@ALIUSIN" class="interactive" target="_blank" rel="noopener noreferrer">YouTube</a>    
+<a href="https://www.tiktok.com/@aliu5in" class="interactive" target="_blank" rel="noopener noreferrer">TikTok</a>
+</div>
+<div class="footer-terms">
+	<details>
+		<summary>Termeni și Condiții</summary>
+		<p style="margin-top:0.6rem; color:#ddd; line-height:1.5;">Poți citi termenii și condițiile complete aici: <a href="SITE/terms-and-conditions.html" target="_blank" rel="noopener noreferrer">Termeni și Condiții</a></p>
+		<p style="margin-top:0.4rem; color:#bfbfbf; font-size:0.9rem;">Scurtă informare: prin folosirea serviciilor noastre accepți termenii documentului. Pentru detalii complete, descarcă fișierul.</p>
+	</details>
+</div>
+</footer>
+
+<!-- Bottom Scrolling Light Effect -->
+<div class="scroll-progress-container">
+<div class="scroll-progress-bar" id="progressBar"></div>
+</div>
+
+<script>
+/**
+* 1. FULL-SCREEN SHADER BACKGROUND (Three.js)
+* Creates a dark, fluid, moody noise effect.
+*/
+const initShader = () => {
+const container = document.getElementById('canvas-container');
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const renderer = new THREE.WebGLRenderer({ alpha: true });
+
+renderer.setSize(window.innerWidth, window.innerHeight);
+container.appendChild(renderer.domElement);
+
+const geometry = new THREE.PlaneGeometry(2, 2);
+
+// Simple noise-based fluid shader
+const material = new THREE.ShaderMaterial({
+uniforms: {
+uTime: { value: 0 },
+uMouse: { value: new THREE.Vector2(0, 0) },
+uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+},
+vertexShader: `
+varying vec2 vUv;
+void main() {
+vUv = uv;
+gl_Position = vec4(position, 1.0);
+}
+`,
+fragmentShader: `
+uniform float uTime;
+uniform vec2 uMouse;
+uniform vec2 uResolution;
+varying vec2 vUv;
+
+// Simple pseudo-random
+float random (in vec2 st) {
+return fract(sin(dot(st.xy, vec2(12.9898,78.233)))* 43758.5453123);
+}
+
+// 2D Noise
+float noise (in vec2 st) {
+vec2 i = floor(st);
+vec2 f = fract(st);
+float a = random(i);
+float b = random(i + vec2(1.0, 0.0));
+float c = random(i + vec2(0.0, 1.0));
+float d = random(i + vec2(1.0, 1.0));
+vec2 u = f*f*(3.0-2.0*f);
+return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+}
+
+void main() {
+vec2 st = gl_FragCoord.xy / uResolution.xy;
+
+// Mouse influence
+float dist = distance(st, uMouse);
+float mouseEffect = smoothstep(0.5, 0.0, dist) * 0.2;
+
+// Liquid movement
+float t = uTime * 0.2;
+vec2 pos = vec2(st * 3.0);
+float n = noise(pos + t);
+
+// Dark color palette
+vec3 color1 = vec3(0.02, 0.02, 0.05);
+vec3 color2 = vec3(0.05, 0.1, 0.08);
+
+float mixVal = n + mouseEffect;
+vec3 finalColor = mix(color1, color2, mixVal);
+
+gl_FragColor = vec4(finalColor, 1.0);
+}
+`
+});
+
+const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);
+
+// Mouse move for shader
+let mouseX = 0;
+let mouseY = 0;
+window.addEventListener('mousemove', (e) => {
+mouseX = e.clientX / window.innerWidth;
+mouseY = 1.0 - (e.clientY / window.innerHeight);
+material.uniforms.uMouse.value.set(mouseX, mouseY);
+});
+
+// Resize
+window.addEventListener('resize', () => {
+renderer.setSize(window.innerWidth, window.innerHeight);
+material.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+});
+
+// Animation Loop
+const animate = (time) => {
+requestAnimationFrame(animate);
+material.uniforms.uTime.value = time * 0.001;
+renderer.render(scene, camera);
+};
+animate(0);
+};
+
+/**
+* 2. MAGNETIC NAVIGATION
+*/
+const initMagneticNav = () => {
+const magnets = document.querySelectorAll('.magnetic-area');
+
+magnets.forEach(area => {
+const wrap = area.querySelector('.magnetic-wrap');
+
+area.addEventListener('mousemove', (e) => {
+const rect = area.getBoundingClientRect();
+const x = e.clientX - rect.left - rect.width / 2;
+const y = e.clientY - rect.top - rect.height / 2;
+wrap.style.transform = `translate(${x * 0.4}px, ${y * 0.4}px)`;
+});
+
+area.addEventListener('mouseleave', () => {
+wrap.style.transform = 'translate(0px, 0px)';
+});
+});
+};
+
+/**
+* 3. 3D-TILT PROJECT CARDS
+*/
+const initTiltCards = () => {
+const cards = document.querySelectorAll('.card');
+
+cards.forEach(card => {
+	card.addEventListener('mousemove', (e) => {
+		const rect = card.getBoundingClientRect();
+		const x = e.clientX - rect.left;
+		const y = e.clientY - rect.top;
+
+		const centerX = rect.width / 2;
+		const centerY = rect.height / 2;
+
+		const rotateX = ((y - centerY) / centerY) * -10;
+		const rotateY = ((x - centerX) / centerX) * 10;
+
+		// include a subtle scale for a "lift" effect
+		card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+	});
+
+	card.addEventListener('mouseleave', () => {
+		card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)`;
+		card.classList.remove('touch-active');
+	});
+
+	// Touch support: on touchstart scale up (no tilt), on touchend reset
+	card.addEventListener('touchstart', (e) => {
+		card.classList.add('touch-active');
+		// prevent simulated mouse events from interfering
+		e.stopPropagation();
+	}, {passive: true});
+	card.addEventListener('touchend', () => {
+		card.classList.remove('touch-active');
+	});
+});
+};
+
+/**
+* 4. BOTTOM SCROLLING LIGHT EFFECT
+*/
+const initScrollProgress = () => {
+const progressBar = document.getElementById('progressBar');
+
+window.addEventListener('scroll', () => {
+const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+const scrolled = (scrollTop / scrollHeight) * 100;
+progressBar.style.width = scrolled + "%";
+});
+};
+
+/**
+* 5. GRID GLOW EFFECTS
+*/
+const initGlowEffects = () => {
+const gridGlow = document.getElementById('gridGlow');
+
+document.addEventListener('mousemove', (e) => {
+const x = e.clientX;
+const y = e.clientY;
+
+gridGlow.style.left = x + 'px';
+gridGlow.style.top = y + 'px';
+});
+};
+
+// Initialize All
+window.addEventListener('DOMContentLoaded', () => {
+initShader();
+initMagneticNav();
+initTiltCards();
+initScrollProgress();
+initGlowEffects();
+});
+
+// Tooltip for info icon under BENEFICII
+document.addEventListener('DOMContentLoaded', () => {
+	const infoWrap = document.querySelector('.info-wrap');
+	if(!infoWrap) return;
+	const icon = infoWrap.querySelector('.info-icon');
+	const tip = infoWrap.querySelector('.info-tooltip');
+
+	// arrow video element (small, right-below)
+	const arrow = infoWrap.querySelector('.info-arrow');
+
+	// show on hover/focus and play arrow
+	const show = () => {
+		tip.style.display = 'block';
+		if(arrow){ arrow.style.display = 'block'; try{ arrow.currentTime = 0; arrow.play(); }catch(e){} }
+	};
+	const hide = () => {
+		tip.style.display = 'none';
+		if(arrow){ try{ arrow.pause(); arrow.currentTime = 0; }catch(e){} arrow.style.display = 'none'; }
+	};
+
+	icon.addEventListener('mouseenter', show);
+	icon.addEventListener('mouseleave', hide);
+	icon.addEventListener('focus', show);
+	icon.addEventListener('blur', hide);
+	// touch/click: toggle on tap
+	icon.addEventListener('click', (e) => {
+		e.stopPropagation();
+		if(tip.style.display === 'block') hide(); else show();
+	});
+	document.addEventListener('click', () => { hide(); });
+});
+
+// Video player: open modal and play selected video
+const initVideoPlayer = () => {
+	const cards = document.querySelectorAll('.card[data-video]');
+	const modal = document.getElementById('video-modal');
+	const player = document.getElementById('videoPlayer');
+	const closeBtn = document.getElementById('videoClose');
+
+	if(!modal || !player) return;
+
+	const close = () => { player.pause(); player.removeAttribute('src'); player.load(); modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); };
+
+	cards.forEach(card => {
+		card.addEventListener('click', () => {
+			const src = card.getAttribute('data-video');
+			if(!src) return;
+			player.src = src;
+			modal.classList.add('show');
+			modal.setAttribute('aria-hidden','false');
+			player.play().catch(()=>{});
+		});
+	});
+
+	closeBtn && closeBtn.addEventListener('click', close);
+	modal.addEventListener('click', (e) => { if(e.target === modal) close(); });
+};
+
+window.addEventListener('DOMContentLoaded', () => { initVideoPlayer(); });
+
+</script>
+<!-- Small script to position CTA under the arrow and wire rotation controls -->
+<script>
+// offsets in pixels: negative = move up/left, positive = move down/right
+const CTA_OFFSET_X = 0; // center horizontally under the video
+const CTA_OFFSET_Y = -69; // move CTA 20px up by default
+function positionCTA(){
+	const video = document.getElementById('arrowAnim');
+	const cta = document.getElementById('arrowCta');
+	if(!video || !cta) return;
+	const rect = video.getBoundingClientRect();
+	const top = Math.round(rect.bottom + 8) + CTA_OFFSET_Y;
+	const left = Math.round(rect.left + (rect.width - cta.offsetWidth) / 2) + CTA_OFFSET_X;
+	cta.style.position = 'fixed';
+	cta.style.top = top + 'px';
+	cta.style.left = Math.max(8, left) + 'px';
+	cta.style.zIndex = 9999;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+	// initial position
+	setTimeout(positionCTA, 120);
+	window.addEventListener('resize', positionCTA);
+	window.addEventListener('scroll', positionCTA, {passive:true});
+});
+</script>
+</body>
+</html>
+
+
+
+
